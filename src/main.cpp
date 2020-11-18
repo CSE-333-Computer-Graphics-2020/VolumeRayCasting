@@ -64,7 +64,7 @@ World *scene()
     transformer->printAlphaTransform();
     transformer->printColorTransform();
 
-    Volume *volume = new Volume(transformer, "volume_file_ctscan");
+    Volume *volume = new Volume(transformer, "volume_file.ctscan");
 
     LightSource *light = new PointLightSource(world, Vector3D(3, -3, 10), Color(1, 1, 1));
     world->setVolume(volume);
