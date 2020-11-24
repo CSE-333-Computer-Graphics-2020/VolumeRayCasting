@@ -22,17 +22,6 @@ bool fileExists(string fileName)
 void Volume::firstIntersect(Ray &r) const{
 	Vector3D o = r.getOrigin();
 	Vector3D d = r.getDirection();
-
-	//(camera : XDIM/2,YDIM/2,ZDIM + 300)
-	// double t = (ZDIM - o.Z())/d.Z();
-	// Vector3D p = o + (t*d);
-	// if(0<p.X() && p.X()<XDIM && 0<p.Y() && p.Y()<YDIM)
-	// {
-	// 	r.t = t;
-	// 	r.hit = true;
-	// }
-
-	//(camera: XDIM + 300, YDIM/2,ZDIM)
 	double t = (XDIM - o.X())/d.X();
 	Vector3D p = o + (t*d);
 	if(0<p.Y() && p.Y()<YDIM && 0<p.Z() && p.Z()<ZDIM)
@@ -42,6 +31,30 @@ void Volume::firstIntersect(Ray &r) const{
 	}
 	return ;
 }
+
+// std::pair<bool,float> Volume::firstIntersectT(Ray &r) const{
+// 	Vector3D o = r.getOrigin();
+// 	Vector3D d = r.getDirection();
+
+// 	//(camera : XDIM/2,YDIM/2,ZDIM + 300)
+// 	// double t = (ZDIM - o.Z())/d.Z();
+// 	// Vector3D p = o + (t*d);
+// 	// if(0<p.X() && p.X()<XDIM && 0<p.Y() && p.Y()<YDIM)
+// 	// {
+// 	// 	r.t = t;
+// 	// 	r.hit = true;
+// 	// }
+
+// 	//(camera: XDIM + 300, YDIM/2,ZDIM)
+// 	double t = (XDIM - o.X())/d.X();
+// 	Vector3D p = o + (t*d);
+// 	if(0<p.Y() && p.Y()<YDIM && 0<p.Z() && p.Z()<ZDIM)
+// 	{
+// 		return std::make_pair(true,t);
+// 	}
+// 	return std::make_pair(false,t);	
+// }
+
 bool inbet(double a,double b,double c)
 {
 	return a<b && b<c;
@@ -67,7 +80,14 @@ glm::vec4 Volume::getNextIntersectColor(const Ray &r) const{
 	Vector3D p = r.getPosition();
 	return getVortexColor(p.X(),p.Y(),p.Z());
 }
-
+glm::vec3 Volume::getNextIntersectionGradient(const Ray &r) const{
+	Vector3D p = r.getPosition();
+	return getVortexGradient(p.X(),p.Y(),p.Z());
+}
+int Volume::getNextIntersectionScalar(const Ray &r) const{
+	Vector3D p = r.getPosition();
+	return sampleVolume(p.X(),p.Y(),p.Z());
+}
 
 void Volume::showVolume(int z)
 {
@@ -161,7 +181,7 @@ void Volume::readGradientsFromFile(string fileName)
 
 
 
-int Volume::sampleVolume(int x, int y, int z)
+int Volume::sampleVolume(int x, int y, int z) const
 {
 	x = (int)clip(x, 0, XDIM - 1);
 	y = (int)clip(y, 0, YDIM - 1);

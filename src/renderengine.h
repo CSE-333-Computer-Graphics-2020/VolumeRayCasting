@@ -18,6 +18,9 @@ private:
 public:
 	RenderEngine(World *_world, Camera *_camera):
 		world(_world), camera(_camera) {}
+	void setCamera(Camera *_camera){
+		this->camera = camera;
+	}
 	bool renderLoop();
 };
 #endif

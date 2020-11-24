@@ -16,12 +16,16 @@ class Volume;
 #include "color.h"
 #include "ray.h"
 
+
+#define MODE 'AVG'
+
 class World
 {
 private:
 	Color background; //Background color to shade rays that miss all objects
 	Volume *volume;
-
+	float BRIGHTNESS=8.0;
+	unsigned int SAMPLES = 100;
 
 public:
 	LightSource* lightSource;
@@ -29,6 +33,7 @@ public:
 	 background(0)
 	{}
 	void setBackground(const Color& bk) { background = bk;}
+	void setBrightness(const float& brt) { BRIGHTNESS = brt;}
 	Color getbackgeound() { return background;}
 	void setLight(LightSource* ls)
 	{

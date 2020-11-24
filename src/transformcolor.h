@@ -48,8 +48,11 @@ public:
 			for (int j = 0; j < steps; j++)
 			{
 				float k = (float)j / (float)(steps - 1);
-
-				colorTransform[numTF++] = glm::vec3( colorCubicSpline[i].GetPointOnSpline(k) ) ;
+				glm::vec3 temp( colorCubicSpline[i].GetPointOnSpline(k) );
+				temp[0] = glm::clamp(temp[0],0.0f,1.0f); 
+				temp[1] = glm::clamp(temp[1],0.0f,1.0f); 
+				temp[2] = glm::clamp(temp[2],0.0f,1.0f); 
+				colorTransform[numTF++] = temp;
 			}
 		}
 
@@ -64,7 +67,8 @@ public:
 			{
 				float k = (float)j / (float)(steps - 1);
 
-				alphaTransform[numTF++] = alphaCubicSpline[i].GetPointOnSpline(k).w;
+				double temp = glm::clamp( alphaCubicSpline[i].GetPointOnSpline(k).w,0.0f,1.0f);
+				alphaTransform[numTF++] = temp;
 			}
 		}
 
