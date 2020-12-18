@@ -14,16 +14,20 @@ To generate the executable using Makefile
 ```sh
 $ make
 ```
-Executing the code (Provide configuration file in [more detail here]())
+Executing the code (Provide configuration file in [more detail here](https://github.com/CSE-333-Computer-Graphics-2020/VolumeRayCasting#defining--providing-configuration-file))
 ```sh
 $ ./Project configuration_file_here
+```
+Example : 
+```sh
+$ ./Project ./input/config_8.cfg
 ```
 ### Usage
 ##### Transfer Function Usage
 Using Transfer Function : Knots needs to be provide and then curve is computed using [CubicSpline Interpolation](https://en.wikiversity.org/wiki/Cubic_Spline_Interpolation).
-* Providing any of the Transfer function from [TransferFunction]() Folder in configration file (more detail on this in next section).
+* Providing any of the Transfer function from [TransferFunction](https://github.com/CSE-333-Computer-Graphics-2020/VolumeRayCasting/tree/main/TransferFunctions) Folder in configration file (more detail on this in next section).
 
-* Three Transfer functions are provided and could be used by changing [main.cpp line number 104](https://github.com/AvatarWan/VolumeRayCasting/blob/7c47dfa04f0cfa2020d8e9edfd8530d5a9942d9d/src/main.cpp#L104)
+* Three Transfer functions are provided and could be used by changing [main.cpp line number 106](https://github.com/CSE-333-Computer-Graphics-2020/VolumeRayCasting/blob/1b1061fb5e08dbf99157eb8e21b1b1c5b9fbf00c/src/main.cpp#L164)
 * Custom Transfer functions : needs to provide knots and a CubicSpline in fit into the it. look at this example.
 ```cpp
     TransformColor *tr=new TransformColor();
@@ -45,7 +49,7 @@ Using Transfer Function : Knots needs to be provide and then curve is computed u
     tr->computeTransferFunction(colorKnots,alphaKnots);
 ```
 #### Defining / Providing Configuration file
-Provide the configuration file to code in this format (fields details are in the comment above them). Some of possible configuration files are provided inside [input]() folder
+Provide the configuration file to code in this format (fields details are in the comment above them). Some of possible configuration files are provided inside [input](https://github.com/CSE-333-Computer-Graphics-2020/VolumeRayCasting/tree/main/input) folder
     # Brightness of the whole Scene [float]
     brightness=4.0
 
@@ -126,17 +130,20 @@ Provide the configuration file to code in this format (fields details are in the
 - Ability to cache the Gradient Computed & filtered applied Volume.
 
 ### Output showing different Features
-#####Averaging Effect
+##### Averaging Effect
 ```sh
 ./Project ./input/config_3.cfg
 ```
+[![Averaging Render](https://github.com/CSE-333-Computer-Graphics-2020/VolumeRayCasting/blob/main/input/config_3.cfg.png "Averaging Render")](https://github.com/CSE-333-Computer-Graphics-2020/VolumeRayCasting/blob/main/input/config_1.cfg "Averaging Render")
 #### Compositing Effect
 ```sh
 ./Project ./input/config_4.cfg
 ```
+[![Compositing Render](https://github.com/CSE-333-Computer-Graphics-2020/VolumeRayCasting/blob/main/input/config_2.cfg.png "Compositing Render")](https://github.com/CSE-333-Computer-Graphics-2020/VolumeRayCasting/blob/1b1061fb5e08dbf99157eb8e21b1b1c5b9fbf00c/input/config_2.cfg#L51 "Compositing Render")
 #### Compositing & Shading Effect
 ```sh
 ./Project ./input/config_3.cfg
 ```
+[![Compositing & Shading Render](https://github.com/CSE-333-Computer-Graphics-2020/VolumeRayCasting/blob/main/input/config_8.cfg.png "Compositing & Shading Render")](https://github.com/CSE-333-Computer-Graphics-2020/VolumeRayCasting/blob/1b1061fb5e08dbf99157eb8e21b1b1c5b9fbf00c/input/config_8.cfg#L52 "Compositing & Shading Render")
 #### Transition Effect 
 Highlighting Transition from internal tissues to bones. Using Gradient Magnitude.
