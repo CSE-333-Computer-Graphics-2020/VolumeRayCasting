@@ -5,6 +5,9 @@
 #include <GL/gl.h>
 #include <glm/gtx/string_cast.hpp> //glm::to_string
 
+#include <string>
+#include <fstream>
+
 #include "ray.h"
 #include "CubicSpline.h"
 #include "TransferFunctionControlPoint.h"
@@ -20,6 +23,38 @@ protected:
 	double alphaTransform[256];
 
 public:
+	TransformColor() {}
+	TransformColor(string colorFile, string alphaFile) 
+	{
+		fstream fin;
+		fin.open(colorFile.c_str(), ios::in);
+		if (fin.fail())
+		{
+		    cout << "Can't open color transform file" << endl;
+		}
+		float r,g,b;
+		int d;
+		vector<TransferFunctionControlPoint> colorKnots;
+		while (fin >> r >> g >> b >> d)
+		{
+			colorKnots.push_back(TransferFunctionControlPoint(r, g, b, d));
+		}
+		fin.close();
+
+		fin.open(alphaFile.c_str(), ios::in);
+		if (fin.fail())
+		{
+		    cout << "Can't open alpha transform file" << endl;
+		}
+		float a;
+		vector<TransferFunctionControlPoint> alphaKnots;
+		while (fin >> a >> d)
+		{
+			std::cout<<a<<", "<<d<<std::endl;
+			alphaKnots.push_back(TransferFunctionControlPoint(a, d));
+		}
+		computeTransferFunction(colorKnots,alphaKnots);
+	}
 	void printColorTransform()
 	{
 		int len = sizeof(colorTransform)/sizeof(glm::vec3);

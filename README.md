@@ -6,6 +6,7 @@ Volume visualization is an important tool to view and analyze large amounts of d
 
 * [imgui](https://github.com/ocornut/imgui) - Dear ImGui is a bloat-free graphical user interface library for C++. 
 * [glm](https://github.com/g-truc/glm) - (GLM) is a header only C++ mathematics library for graphics software based on the OpenGL Shading Language (GLSL) specifications
+* [glfw](https://github.com/glfw/glfw) - (GLFW) is an Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan application development. It provides a simple, platform-independent API for creating windows, contexts and surfaces, reading input, handling events, etc.
 > Note this project is derived from assignment 3 code provided by the Instructor
 
 #### Building for source
@@ -13,12 +14,15 @@ To generate the executable using Makefile
 ```sh
 $ make
 ```
-Executing the code
+Executing the code (Provide configuration file in [more detail here]())
 ```sh
-$ ./Project
+$ ./Project configuration_file_here
 ```
 ### Usage
-Using Transfer Function :
+##### Transfer Function Usage
+Using Transfer Function : Knots needs to be provide and then curve is computed using [CubicSpline Interpolation](https://en.wikiversity.org/wiki/Cubic_Spline_Interpolation).
+* Providing any of the Transfer function from [TransferFunction]() Folder in configration file (more detail on this in next section).
+
 * Three Transfer functions are provided and could be used by changing [main.cpp line number 104](https://github.com/AvatarWan/VolumeRayCasting/blob/7c47dfa04f0cfa2020d8e9edfd8530d5a9942d9d/src/main.cpp#L104)
 * Custom Transfer functions : needs to provide knots and a CubicSpline in fit into the it. look at this example.
 ```cpp
@@ -40,37 +44,99 @@ Using Transfer Function :
         TransferFunctionControlPoint(0.1f, 256)    };
     tr->computeTransferFunction(colorKnots,alphaKnots);
 ```
+#### Defining / Providing Configuration file
+Provide the configuration file to code in this format (fields details are in the comment above them). Some of possible configuration files are provided inside [input]() folder
+    # Brightness of the whole Scene [float]
+    brightness=4.0
 
-Using different Rendering Techniques :
-* [Averaging](https://github.com/AvatarWan/VolumeRayCasting/blob/7c47dfa04f0cfa2020d8e9edfd8530d5a9942d9d/src/world.cpp#L12)
-* [Compositing](https://github.com/AvatarWan/VolumeRayCasting/blob/7c47dfa04f0cfa2020d8e9edfd8530d5a9942d9d/src/world.cpp#L13)
-* [Compositing with gradient used for Opacity](https://github.com/AvatarWan/VolumeRayCasting/blob/7c47dfa04f0cfa2020d8e9edfd8530d5a9942d9d/src/world.cpp#L14)
+    # location of the Color Transform knots file to be used
+    colorTransform=./TransferFunctions/CompositePhong/transformationColorPhong4.trn
 
-### Todos
+    # location of the Alpha (Opacity) Transform knots file to be used
+    alphaTransform=./TransferFunctions/CompositePhong/transformationAlphaPhong4.trn
 
- - Phong Shading
- - Optimization
+    # location of file containing volume
+    volumeFile=./volumes/volume_file.ctscan
+    # slices of the whole volume
+    volumeSlices=256
 
-[//]: # (These are reference links used in the body of this note and get stripped out when the markdown processor does its job. There is no need to format nicely because it shouldn't be seen. Thanks SO - http://stackoverflow.com/questions/4823468/store-comments-in-markdown-syntax)
+    # Find value at the location in volume
+    # Value (Color (RGBA) and gradient) at a location (float) of the grid is computed as :
+    # 1 - for trilinear interpolation with nearest 8 neighbors for the value
+    # 2 - for the nearest neighbor
+    interpolation=1
 
+    # Scalar Filter Size (needs to be odd number)
+    #   apply filter of NXN to make volume smooth
+    scalarFilter=1
 
-   [dill]: <https://github.com/joemccann/dillinger>
-   [git-repo-url]: <https://github.com/joemccann/dillinger.git>
-   [john gruber]: <http://daringfireball.net>
-   [df1]: <http://daringfireball.net/projects/markdown/>
-   [markdown-it]: <https://github.com/markdown-it/markdown-it>
-   [Ace Editor]: <http://ace.ajax.org>
-   [node.js]: <http://nodejs.org>
-   [Twitter Bootstrap]: <http://twitter.github.com/bootstrap/>
-   [jQuery]: <http://jquery.com>
-   [@tjholowaychuk]: <http://twitter.com/tjholowaychuk>
-   [express]: <http://expressjs.com>
-   [AngularJS]: <http://angularjs.org>
-   [Gulp]: <http://gulpjs.com>
+    # Gradient Computation Filter Size (needs to be odd number)
+    #   after computing gradient by central difference apply filter of NXN to make volume smooth
+    gradientFilter=1
 
-   [PlDb]: <https://github.com/joemccann/dillinger/tree/master/plugins/dropbox/README.md>
-   [PlGh]: <https://github.com/joemccann/dillinger/tree/master/plugins/github/README.md>
-   [PlGd]: <https://github.com/joemccann/dillinger/tree/master/plugins/googledrive/README.md>
-   [PlOd]: <https://github.com/joemccann/dillinger/tree/master/plugins/onedrive/README.md>
-   [PlMe]: <https://github.com/joemccann/dillinger/tree/master/plugins/medium/README.md>
-   [PlGa]: <https://github.com/RahulHP/dillinger/blob/master/plugins/googleanalytics/README.md>
+    # Mode of Transformation 
+    # 1 - (Voxel Value, Voxel Value) -> (RGB, A) (Provide Different Objects themeselve)
+    # 2 - (Voxel Value, Gradient Magnitude) -> (RGB, A) (Provide Edges i.e. transition details between Objects)
+    modeTransform=1
+
+    # Light direction
+    # lightDirection=-1.0 1.0 0.0
+    lightDirection=0.0 1.0 0.0
+
+    # Shineness Constant
+    shininess=3.0
+
+    # Specular Contribution
+    ks=0.1
+
+    # number of samples along ray
+    samplesRay=100
+
+    # assembling method :
+    # 1 - average
+    # 2 - compositing
+    # 3 - compositing + shading
+    renderingMethod=3
+
+    # Camera Configuration
+    #   Camera Position
+    camera_position=428 128 128
+    #   Camera Target
+    camera_target=0 128 128
+    # Camera Up Vector
+    camera_up=0 1 0
+    #   Camera Field of Vision
+    camera_fovy=45
+
+### Features
+
+- user friendly way to provide transfer function & different transfer functions for both color and opacity.
+- support for both Nearest Neighbour and Trilinear Interpolation to find values at the location in the Volume.
+- [Box Linear Filter](https://en.wikipedia.org/wiki/Box_blur) for Scalar Values of the Volume and Gradients.
+- Customizable number of sample along the ray.
+- Different Tranformation Mode to Find the Value of RGBA at each voxel.
+  - (Voxel Value, **Voxel Value**) -> (RGB, A) (Provide Different Objects themeselve)
+  - (Voxel Value, **Gradient Magnitude**) -> (RGB, A) (Provide Edges i.e. transition details between Objects)
+- Customizable light direction
+- Different Rendering techniques :
+  - average
+  - compositing
+  - compositing + shading
+- Customizable Camera location, View Direction and Orientation.
+- Ability to cache the Gradient Computed & filtered applied Volume.
+
+### Output showing different Features
+#####Averaging Effect
+```sh
+./Project ./input/config_3.cfg
+```
+#### Compositing Effect
+```sh
+./Project ./input/config_4.cfg
+```
+#### Compositing & Shading Effect
+```sh
+./Project ./input/config_3.cfg
+```
+#### Transition Effect 
+Highlighting Transition from internal tissues to bones. Using Gradient Magnitude.

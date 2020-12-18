@@ -11,7 +11,9 @@ const Color RenderEngine::trace(const double i, const double j)
 
 bool RenderEngine::renderLoop()
 {
+
 	static int i = 0;
+	#pragma omp parallel for
 	for(int j = 0; j<camera->getHeight(); j++)
 	{
 		if(!SAMPLING){

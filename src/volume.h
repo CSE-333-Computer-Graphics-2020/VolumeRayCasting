@@ -5,6 +5,8 @@
 #include <GL/gl.h>
 #include <glm/gtx/intersect.hpp>
 
+#include "../depends/stb/stb_image.h"
+
 #include <vector>
 #include <string>
 #include <sstream>
@@ -20,6 +22,7 @@ class LightSource;
 using namespace std;
 
 bool fileExists(string fileName);
+bool has_suffix(const std::string &str, const std::string &suffix);
 
 #include <iostream>
 
@@ -56,20 +59,42 @@ protected:
 	GLubyte* pData;
 	vector<float> scalars;
 	vector<glm::vec3> gradients;
+	/*
+	Value (Color (RGBA) and gradient) at a location of the grid is computed as :
+	1 - for trilinear interpolation with nearest 8 neighbors for the value
+	2 - for the nearest neighbor
+	*/
+	unsigned int INTER_MODE = 1;
+	/*
+	Scalar Filter Size
+	*/
+	unsigned int S_FILTER = 1;	
+	/*
+	Gradient Computation Filter Size
+	*/
+	unsigned int G_FILTER = 5;
+	/*
+	Mode of Transformation 
+	1 - (Voxel Value, Voxel Value) -> (RGB, A)
+	2 - (Voxel Value, Gradient Magnitude) -> (RGB, A)
+	*/
+	unsigned int TRN_MODE = 1;
 
 	Face faces[6];
 	//https://www.linuxquestions.org/questions/programming-9/glubyte-definition-591103/
 public:
 	TransformColor *transformer;
-	const int XDIM=128;
-	const int YDIM=256;
-	const int ZDIM=256;
+	int XDIM=128;
+	int YDIM=256;
+	int ZDIM=256;
 
-	Volume(TransformColor *_transformer, const string volume_file,bool gen_gradient=false):
-		transformer(_transformer)
+	string volume_file;
+
+	Volume(TransformColor *_transformer, const string _volume_file,const int slices, const int _S_FILTER=1):
+		transformer(_transformer), volume_file(_volume_file), S_FILTER(_S_FILTER)
 	{
 		std::cout<<"Loading Volume..."<<std::endl;
-	    if (!loadVolume(volume_file))
+	    if (! ( ( has_suffix(volume_file,".png") && loadVolumePNG(volume_file,slices) ) || loadVolume(volume_file) ) )
 	    {
 	        cout << "Volume Loading Error!" << endl;
 	    }
@@ -78,14 +103,30 @@ public:
 	    setAABB();
 	    std::cout<<"Finish AABB..."<<std::endl;
 	    // showVolume(100);
-	    if(!gen_gradient && fileExists(volume_file+".grad"))
-			readGradientsFromFile(volume_file+".grad");
+	}
+
+	void setInterpolation(unsigned int INTER_MODE)
+	{
+		this->INTER_MODE = INTER_MODE;
+	}
+	void setGFilterSize(unsigned int G_FILTER)
+	{
+		this->G_FILTER = G_FILTER;
+	}
+	void setTransformationDimension(unsigned int TRN_MODE)
+	{
+		this->TRN_MODE = TRN_MODE;
+	}
+	void genGradient(bool gen_gradient=false)
+	{
+		string g_file = volume_file+'_'+std::to_string(G_FILTER)+".grad";
+	    if(!gen_gradient && fileExists(g_file))
+			readGradientsFromFile(g_file);
 		else{
 			std::cout<<"Generating Gradient..."<<std::endl;
-			generateGradients(1,volume_file+".grad");
+			generateGradients(1,g_file);
 			std::cout<<"Finish Generating Gradient"<<std::endl;
 		}
-
 	}
 
 	void setAABB()
@@ -162,19 +203,34 @@ public:
 			t = tmax;
 		return hit;
 	}
+/*
+		color alpha
+OPT = 0 : s    s
+OPT = 1 : s    g
+*/
+
 	glm::vec4 getVortexColor(int x,int y,int z) const
 	{
 		if(!isInBounds(x,y,z))
 			return glm::vec4(0.0);
-		float scaleVal = scalars[x + (y*XDIM) + (z*XDIM*YDIM)];
-		glm::vec3 grd = gradients[ x + (y*XDIM) + (z*XDIM*YDIM) ];
+		if(TRN_MODE == 1)
+		{
+			float scaleVal = scalars[x + (y*XDIM) + (z*XDIM*YDIM)];
+			return this->transformer->getTransformedColor(scaleVal,scaleVal);			
+		}
+		else
+		{
+			float scaleVal = scalars[x + (y*XDIM) + (z*XDIM*YDIM)];
+			glm::vec3 grd = gradients[ x + (y*XDIM) + (z*XDIM*YDIM) ];
+			int gradVal =  glm::clamp(glm::length(grd),0.0f,1.0f)*256;
+			return this->transformer->getTransformedColor(scaleVal,gradVal);						
+		}
 
-//		int gradVal =  scalars[x + (y*XDIM) + (z*XDIM*YDIM)]; //needs to change to gradient magnitude
-		int gradVal =  glm::length(grd)*256;
-		 return this->transformer->getTransformedColor(scaleVal,gradVal);
 	}
 	glm::vec3 getVortexGradient(int x,int y,int z) const
 	{
+		if(!isInBounds(x,y,z))
+			return glm::vec3(0.0);
 		return gradients[ x + (y*XDIM) + (z*XDIM*YDIM) ];;		
 	}
 
@@ -186,6 +242,9 @@ public:
 	int getNextIntersectionScalar(const Ray &r) const;
 
 	bool loadVolume(string volume_file);
+	bool loadVolumePNG(string volume_file,int slices);
+	void filterVolumeNxNxN(int n);
+	float sampleVolumeNxNxN(int x, int y, int z, int n);
 	void generateGradients(int sampleSize,string fileName);
 	void readGradientsFromFile(string fileName);
 	int sampleVolume(int x, int y, int z) const;
